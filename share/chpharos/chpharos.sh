@@ -199,7 +199,7 @@ if command -v compgen &> /dev/null; then
   unset chpharos_function
 fi
 
-CHPHAROS_VERSION=0.3.1
+CHPHAROS_VERSION=0.4.0
 
 _chpharos_error_echo() {
   (>&2 echo "error: $1")
@@ -257,20 +257,27 @@ _chpharos_login_wget() {
 }
 
 _chpharos_subcommand_login() {
-# ensure we have fresh values beore login
-  unset CHPHAROS_TOKEN
-  unset username
-  unset password
+  local username
+  local password
 
   while [ ! -z "$1" ]; do
     case $1 in
-      -u | --user )       shift
-                          username=$1
+      -u | --username )   shift
+                          username="$1"
                           ;;
-      -p | --pass )       shift
-                          password=$1
+      -p | --password )   shift
+                          password="$1"
                           ;;
-      * )                 interactive=1
+      --help)             cat <<EOF
+chpharos login [--username <username>] [--password <password>]
+
+  Login to your Kontena Account
+
+  --username  Kontena Account username
+  --password  Kontena Account password
+EOF
+                          return 0
+                          ;;
     esac
     shift
   done
@@ -298,6 +305,7 @@ _chpharos_subcommand_login() {
     _chpharos_error_echo "Login failed: ${token}" && return 1
   fi
 }
+
 _chpharos_logout_curl() {
   [ -z "${CHPHAROS_TOKEN}" ] && return
   curl -sSL -XDELETE "${CHPHAROS_SVC_URL}/auth" \
